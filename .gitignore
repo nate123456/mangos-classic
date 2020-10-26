@@ -47,7 +47,7 @@ nbproject/
 
 #
 # Git stuff
-!.github/
+!.github/**
 # stgit directories
 patches-*
 
