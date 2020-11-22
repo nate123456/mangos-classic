@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  mangosd:
+    build:
+      context: ..
+      dockerfile: docker/mangosd/Dockerfile
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./mangosd/conf:/mangos/etc
+  realmd:
+    build:
+      context: ..
+      dockerfile: docker/realmd/Dockerfile
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    ports:
+      - "3724:3724"
+    volumes:
+      - ./realmd/conf:/mangos/etc

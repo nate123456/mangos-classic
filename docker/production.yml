@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  mangosd:
+    image: ghcr.io/nate123456/mangos-classic-mangosd-master:latest
+    restart: "unless-stopped"
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./mangosd/conf:/mangos/etc
+    env_file:
+      - config.env
+  realmd:
+    image: ghcr.io/nate123456/mangos-classic-realmd-master:latest
+    restart: "unless-stopped"
+    ports:
+      - "3724:3724"
+    volumes:
+      - ./realmd/conf:/mangos/etc
+    environment:
+      - REALM_HOST=mangosd
+    env_file:
+      - config.env
+  db:
+    image: mysql:5.7
+    restart: "always"
+    environment:
+      - MYSQL_USER=mangos
+      - MYSQL_PASSWORD=mangos
+      - MYSQL_ROOT_PASSWORD=mangos
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db:/var/lib/mysql

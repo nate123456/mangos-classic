@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  mangosd:
+    restart: "no"
+    environment:
+      - MYSQL_HOST=db
+    depends_on:
+      - db
+  realmd:
+    depends_on:
+      - db
+    restart: "no"
+    environment:
+      - MYSQL_HOST=db
+      - REALM_NAME=Mangos
+      - REALM_HOST=mangosd
+  db:
+    image: mysql:5.7
+    restart: "no"
+    environment:
+      - MYSQL_USER=mangos
+      - MYSQL_PASSWORD=mangos
+      - MYSQL_ROOT_PASSWORD=mangos
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db:/var/lib/mysql
