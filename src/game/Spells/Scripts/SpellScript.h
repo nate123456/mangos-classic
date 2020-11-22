@@ -53,15 +53,15 @@ struct SpellScript
     // called in Spell::cast on all successful checks and after taking reagents
     virtual void OnCast(Spell* /*spell*/) const {}
     // called on unit target hit before damage deal and proc or after effect execution for targetless, dest, item and go
-    virtual void OnHit(Spell* /*spell*/) const {}
+    virtual void OnHit(Spell* /*spell*/, SpellMissInfo /*missInfo*/) const {}
     // called on target hit after damage deal and proc
     virtual void OnAfterHit(Spell* /*spell*/) const {}
 };
 
 struct AuraScript
 {
-    // called on SpellAuraHolder creation
-    virtual void OnHolderInit(SpellAuraHolder* /*holder*/) const {}
+    // called on SpellAuraHolder creation - caster can be nullptr
+    virtual void OnHolderInit(SpellAuraHolder* /*holder*/, WorldObject* /*caster*/) const {}
     // called during any event that calculates aura modifier amount - caster can be nullptr
     virtual int32 OnAuraValueCalculate(Aura* /*aura*/, Unit* /*caster*/, int32 value) const { return value; }
     // called during done/taken damage calculation
@@ -78,7 +78,7 @@ struct AuraScript
     virtual void OnManaAbsorb(Aura* /*aura*/, int32& /*currentAbsorb*/) const {}
     // called on death prevention
     virtual void OnAuraDeathPrevention(Aura* /*aura*/, int32& /*remainingDamage*/) const {}
-    // called on aura dispel
+    // called on aura dispel - warning - auras of holder might be deleted
     virtual void OnDispel(SpellAuraHolder* /*holder*/, Unit* /*dispeller*/, uint32 /*dispellingSpellId*/, uint32 /*originalStacks*/) const {}
     // called on periodic auras which need amount calculation (damage, heal, burn, drain)
     virtual void OnPeriodicCalculateAmount(Aura* /*aura*/, uint32& /*amount*/) const {}

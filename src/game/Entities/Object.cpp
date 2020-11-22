@@ -687,23 +687,22 @@ void Object::ClearUpdateMask(bool remove)
     }
 }
 
-bool Object::LoadValues(const char* data)
+void Object::_LoadIntoDataField(const char* data, uint32 startOffset, uint32 count)
 {
-    if (!m_uint32Values) _InitValues();
+    if (!data)
+        return;
 
     Tokens tokens = StrSplit(data, " ");
 
-    if (tokens.size() != m_valuesCount)
-        return false;
+    if (tokens.size() != count)
+        return;
 
-    Tokens::iterator iter;
-    int index;
-    for (iter = tokens.begin(), index = 0; index < m_valuesCount; ++iter, ++index)
+    Tokens::const_iterator iter;
+    uint32 index;
+    for (iter = tokens.begin(), index = 0; index < count; ++iter, ++index)
     {
-        m_uint32Values[index] = std::stoul(*iter);
+        m_uint32Values[startOffset + index] = atol((*iter).c_str());
     }
-
-    return true;
 }
 
 void Object::_SetUpdateBits(UpdateMask* updateMask, Player* /*target*/) const
@@ -1306,7 +1305,7 @@ float WorldObject::GetAngleAt(float x, float y, float ox, float oy)
 
 float WorldObject::GetAngle(float x, float y) const
 {
-    return GetAngleAt(GetPositionX(), GetPositionY(), x, y);
+    return m_position.GetAngle(x, y);
 }
 
 float WorldObject::GetAngleAt(float x, float y, const WorldObject* obj) const
@@ -2191,10 +2190,21 @@ bool WorldObject::HasGCD(SpellEntry const* spellEntry) const
     if (spellEntry)
     {
         auto gcdItr = m_GCDCatMap.find(spellEntry->StartRecoveryCategory);
-        return gcdItr != m_GCDCatMap.end();
+        return gcdItr != m_GCDCatMap.end() && (*gcdItr).second > GetMap()->GetCurrentClockTime();
+    }
+    return !m_GCDCatMap.empty();
+}
+
+TimePoint WorldObject::GetGCD(SpellEntry const* spellEntry) const
+{
+    if (spellEntry)
+    {
+        auto gcdItr = m_GCDCatMap.find(spellEntry->StartRecoveryCategory);
+        if (gcdItr != m_GCDCatMap.end())
+            return (*gcdItr).second;
     }
 
-    return !m_GCDCatMap.empty();
+    return GetMap()->GetCurrentClockTime();
 }
 
 void WorldObject::AddCooldown(SpellEntry const& spellEntry, ItemPrototype const* /*itemProto = nullptr*/, bool /*permanent = false*/, uint32 forcedDuration /*= 0*/)
@@ -2231,12 +2241,12 @@ void WorldObject::UpdateCooldowns(TimePoint const& now)
     }
 }
 
-bool WorldObject::CheckLockout(SpellSchoolMask schoolMask) const
+bool WorldObject::CheckLockout(SpellSchoolMask schoolMask, TimePoint const& now) const
 {
     for (auto& lockoutItr : m_lockoutMap)
     {
         SpellSchoolMask lockoutSchoolMask = SpellSchoolMask(1 << lockoutItr.first);
-        if (lockoutSchoolMask & schoolMask)
+        if ((lockoutSchoolMask & schoolMask) && lockoutItr.second > now)
             return true;
     }
 
@@ -2272,6 +2282,12 @@ bool WorldObject::IsSpellReady(SpellEntry const& spellEntry, ItemPrototype const
 {
     uint32 spellCategory = spellEntry.Category;
 
+    TimePoint now;
+    if (IsInWorld())
+        now = GetMap()->GetCurrentClockTime();
+    else
+        now = World::GetCurrentClockTime();
+
     // overwrite category by provided category in item prototype during item cast if need
     if (itemProto)
     {
@@ -2285,13 +2301,21 @@ bool WorldObject::IsSpellReady(SpellEntry const& spellEntry, ItemPrototype const
         }
     }
 
-    if (m_cooldownMap.FindBySpellId(spellEntry.Id) != m_cooldownMap.end())
-        return false;
+    {
+        auto itr = m_cooldownMap.FindBySpellId(spellEntry.Id);
+        if (itr != m_cooldownMap.end() && !(*itr).second->IsSpellCDExpired(now))
+            if (!itemProto || itemProto->ItemId == (*itr).second.get()->GetItemId())
+                return false;
+    }
 
-    if (spellCategory && m_cooldownMap.FindByCategory(spellCategory) != m_cooldownMap.end())
-        return false;
+    if (spellCategory)
+    {
+        auto itr = m_cooldownMap.FindByCategory(spellCategory);
+        if (itr != m_cooldownMap.end() && !(*itr).second->IsCatCDExpired(now))
+            return false;
+    }
 
-    if (spellEntry.PreventionType == SPELL_PREVENTION_TYPE_SILENCE && CheckLockout(GetSpellSchoolMask(&spellEntry)))
+    if (spellEntry.PreventionType == SPELL_PREVENTION_TYPE_SILENCE && CheckLockout(GetSpellSchoolMask(&spellEntry), now))
         return false;
 
     return true;
@@ -2547,4 +2571,14 @@ int32 WorldObject::CalculateSpellEffectValue(Unit const* target, SpellEntry cons
         }
     }
     return value;
+}
+
+float Position::GetAngle(const float x, const float y) const
+{
+    float dx = x - GetPositionX();
+    float dy = y - GetPositionY();
+
+    float ang = atan2(dy, dx);                              // returns value between -Pi..Pi
+    ang = (ang >= 0) ? ang : 2 * M_PI_F + ang;
+    return ang;
 }

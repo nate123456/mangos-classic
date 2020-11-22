@@ -73,6 +73,7 @@ UPDATE gameobject_template SET ScriptName='go_darkmoon_faire_music' WHERE entry=
 UPDATE gameobject_template SET ScriptName='go_elemental_rift' WHERE entry IN (179664, 179665, 179666, 179667);
 UPDATE gameobject_template SET ScriptName='go_dragon_head' WHERE entry IN(179556,179558,179881,179882);
 UPDATE gameobject_template SET ScriptName='go_unadorned_spike' WHERE entry IN(175787);
+UPDATE gameobject_template SET ScriptName='go_containment_coffer' WHERE entry=122088;
 
 /* GUARD */
 UPDATE creature_template SET ScriptName='guard_orgrimmar' WHERE entry=3296;
@@ -107,6 +108,7 @@ UPDATE creature_template SET ScriptName='npc_prof_leather' WHERE entry IN (7866,
 -- UPDATE creature_template SET ScriptName='npc_innkeeper' WHERE npcflag=npcflag|65536;
 UPDATE creature_template SET ScriptName='npc_redemption_target' WHERE entry IN (6172,6177,17542,17768);
 UPDATE creature_template SET ScriptName='npc_the_cleaner' WHERE entry=14503;
+UPDATE creature_template SET ScriptName='npc_aoe_damage_trigger' WHERE entry IN (16697);
 
 /* SPELL */
 UPDATE creature_template SET ScriptName='spell_dummy_npc' WHERE entry IN (
@@ -496,6 +498,7 @@ UPDATE creature_template SET ScriptName='npc_deathstalker_faerleia' WHERE entry=
 
 /* STONETALON MOUNTAINS */
 UPDATE creature_template SET ScriptName='npc_kaya' WHERE entry=11856;
+UPDATE gameobject_template SET ScriptName = 'go_covert_ops' WHERE entry=19590;
 
 /* STORMWIND CITY */
 UPDATE creature_template SET ScriptName='npc_bartleby' WHERE entry=6090;
@@ -1249,13 +1252,13 @@ INSERT INTO script_texts (entry,content_default,sound,type,language,emote,broadc
 
 ('-1000579','REUSE ME','0','0','0','0','0','REUSE ME'),
 
-('-1000582','Help! Please, You must help me!','0','0','0','0','0','Galen - periodic say'),
-('-1000583','Let us leave this place.','0','0','0','0','0','Galen - quest accepted'),
-('-1000584','Look out! The $c attacks!','0','0','0','0','0','Galen - aggro 1'),
-('-1000585','Help! I''m under attack!','0','0','0','0','0','Galen - aggro 2'),
-('-1000586','Thank you $N. I will remember you always. You can find my strongbox in my camp, north of Stonard.','0','0','0','0','0','Galen - quest complete'),
-('-1000587','%s whispers to $N the secret to opening his strongbox.','0','2','0','0','0','Galen - emote whisper'),
-('-1000588','%s disappears into the swamp.','0','2','0','0','0','Galen - emote disappear'),
+('-1000582','Help!  Please, you must help me!','0','0','0','0','7124','Galen - periodic say'),
+('-1000583','Let us leave this place.','0','0','0','0','1854','Galen - quest accepted'),
+('-1000584','Look out!  The $n attacks!','0','0','0','0','1628','Galen - aggro 1'),
+('-1000585','Help! I''m under attack!','0','0','0','0','1629','Galen - aggro 2'),
+('-1000586','Thank you, $N.  I will remember you always.  You can find my strongbox in my camp, north of Stonard.','0','0','0','0','1855','Galen - quest complete'),
+('-1000587','%s whispers to $N the secret to opening his strongbox.','0','2','0','0','2076','Galen - emote whisper'),
+('-1000588','%s disappears into the swamp.','0','2','0','0','1856','Galen - emote disappear'),
 
 ('-1000589','Kroshius live? Kroshius crush!','0','1','0','0','0','SAY_KROSHIUS_REVIVE'),
 
@@ -2655,7 +2658,7 @@ INSERT INTO gossip_texts (entry,content_default,comment) VALUES
 --
 
 TRUNCATE script_waypoint;
-INSERT INTO script_waypoint VALUES
+INSERT INTO `script_waypoint` (`entry`, `pathId`, `pointid`, `position_x`, `position_y`, `position_z`, `orientation`, `waittime`, `script_id`, `comment`) VALUES
 (349,0,1,-8769.59,-2185.73,141.975,0,0,0,''),
 (349,0,2,-8776.54,-2193.78,140.96,0,0,0,''),
 (349,0,3,-8783.29,-2194.82,140.462,0,0,0,''),
@@ -3340,7 +3343,7 @@ INSERT INTO script_waypoint VALUES
 (4983,0,21,-3336.98,-3129.61,30.692,0,0,0,''),
 (4983,0,22,-3326.34,-3126.83,34.426,0,0,0,''),
 (4983,0,23,-3322.65,-3124.63,33.842,0,0,0,''),
-(5391,0,1,-9901.12,-3727.29,22.11,0,3000,0,''),
+(5391,0,1,-9901.12,-3727.29,22.11,3.8316,3000,0,'Galen Goodward - Escort starts'),
 (5391,0,2,-9909.27,-3727.81,23.25,0,0,0,''),
 (5391,0,3,-9935.25,-3729.02,22.11,0,0,0,''),
 (5391,0,4,-9945.83,-3719.34,21.68,0,0,0,''),
@@ -3359,9 +3362,10 @@ INSERT INTO script_waypoint VALUES
 (5391,0,17,-10052.9,-3479.13,21.67,0,0,0,''),
 (5391,0,18,-10060.7,-3460.31,21.67,0,0,0,''),
 (5391,0,19,-10074.7,-3436.85,20.97,0,0,0,''),
-(5391,0,20,-10074.7,-3436.85,20.97,0,0,0,''),
-(5391,0,21,-10072.9,-3408.92,20.43,0,15000,0,''),
-(5391,0,22,-10108,-3406.05,22.06,0,0,0,''),
+(5391,0,20,-10074.7,-3436.85,20.97,0,0,0,'Galen Goodward - Set Run'),
+(5391,0,21,-10072.9,-3408.92,20.43,2.8412,1000,0,'Galen Goodward - Escort complete and SAY_QUEST_COMPLETE'),
+(5391,0,22,-10078.2,-3407.64,20.44,0,0,0,'Galen Goodward - EMOTE_DISAPPEAR'),
+(5391,0,23,-10108,-3406.05,22.06,0,1000,0,'Galen Goodward - Despawn'),
 (5644,0,1,-339.679,1752.04,139.482,0,0,0,''),
 (5644,0,2,-328.957,1734.95,139.327,0,0,0,''),
 (5644,0,3,-338.29,1731.36,139.327,0,0,0,''),

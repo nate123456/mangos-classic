@@ -15,7 +15,10 @@ INSERT INTO spell_scripts(Id, ScriptName) VALUES
 (1121,'spell_entangle_fankriss'),
 (3730,'spell_initialize_image'),
 (7054,'spell_forsaken_skill'),
+(13278,'spell_gdr_channel'),
+(13493,'spell_gdr_periodic'),
 (16380,'spell_greater_invisibility_mob'),
+(17244,'spell_anastari_possess'),
 (19832,'spell_possess_razorgore'),
 (19872,'spell_calm_dragonkin'),
 (19873,'spell_destroy_egg'),
@@ -79,7 +82,25 @@ INSERT INTO spell_scripts(Id, ScriptName) VALUES
 (11688,'spell_life_tap'),
 (11689,'spell_life_tap');
 
+-- Warrior
+INSERT INTO spell_scripts(Id, ScriptName) VALUES
+(5308,'spell_warrior_execute'),
+(20658,'spell_warrior_execute'),
+(20660,'spell_warrior_execute'),
+(20661,'spell_warrior_execute'),
+(20662,'spell_warrior_execute'),
+(20647,'spell_warrior_execute_damage');
+
+-- Mage
+INSERT INTO spell_scripts(Id, ScriptName) VALUES
+(11213,'spell_arcane_concentration'),
+(12574,'spell_arcane_concentration'),
+(12575,'spell_arcane_concentration'),
+(12576,'spell_arcane_concentration'),
+(12577,'spell_arcane_concentration');
+
 -- Battleground and Outdoor PvP
+-- Alterac Valley
 INSERT INTO spell_scripts(Id, ScriptName) VALUES
 -- Arathi basin
 (23936,'spell_battleground_banner_trigger'),

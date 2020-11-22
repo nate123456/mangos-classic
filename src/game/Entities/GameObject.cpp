@@ -368,6 +368,12 @@ void GameObject::Update(const uint32 diff)
                         // FIXME: this is activation radius (in different casting radius that must be selected from spell data)
                         // TODO: move activated state code (cast itself) to GO_ACTIVATED, in this place only check activating and set state
                         float radius = float(goInfo->trap.diameter) / 2.0f;
+
+                        // behavior verified on classic
+                        // TODO: needs more research
+                        if (goInfo->GetLockId() == 12) // 21 objects currently (hunter traps), all with 5 or less for diameter -> use diameter as radius instead
+                            radius = float(goInfo->trap.diameter);
+
                         bool valid = true;
                         if (!radius)
                         {
@@ -596,21 +602,14 @@ void GameObject::Update(const uint32 diff)
             if (!m_respawnOverriden)
             {
                 // since pool system can fail to roll unspawned object, this one can remain spawned, so must set respawn nevertheless
-                if (GameObjectData const* data = sObjectMgr.GetGOData(GetObjectGuid().GetCounter()))
-                    m_respawnDelay = data->GetRandomRespawnTime();
+                if (IsSpawnedByDefault())
+                    if (GameObjectData const* data = sObjectMgr.GetGOData(GetObjectGuid().GetCounter()))
+                        m_respawnDelay = data->GetRandomRespawnTime();
             }
             else if (m_respawnOverrideOnce)
                 m_respawnOverriden = false;
 
-            switch (GetGoType()) // TODO: check, very experimental
-            {
-                case GAMEOBJECT_TYPE_BUTTON: // if button and not spawned by default, do not despawn
-                    m_respawnTime = time(nullptr) + m_respawnDelay;
-                    break;
-                default: // Old logic, if !m_spawnedByDefault despawn on first usage
-                    m_respawnTime = m_spawnedByDefault ? time(nullptr) + m_respawnDelay : 0;
-                    break;
-            }
+            m_respawnTime = m_spawnedByDefault ? time(nullptr) + m_respawnDelay : 0;
 
             // if option not set then object will be saved at grid unload
             if (sWorld.getConfig(CONFIG_BOOL_SAVE_RESPAWN_TIME_IMMEDIATELY))
@@ -1152,6 +1151,8 @@ bool GameObject::IsCollisionEnabled() const
     {
         case GAMEOBJECT_TYPE_DOOR:
             return GetGoState() == GO_STATE_READY;
+        case GAMEOBJECT_TYPE_TRAP:
+            return false;
         default:
             return true;
     }
@@ -1205,7 +1206,7 @@ void GameObject::Use(Unit* user)
     uint32 triggeredFlags = 0;
     bool originalCaster = true;
 
-    if (user->IsPlayer())
+    if (user->IsPlayer() && GetGoType() != GAMEOBJECT_TYPE_TRAP) // workaround for GO casting
         if (!m_goInfo->IsUsableMounted())
             user->RemoveSpellsCausingAura(SPELL_AURA_MOUNTED);
 
@@ -1289,6 +1290,9 @@ void GameObject::Use(Unit* user)
                 DEBUG_LOG("Chest ScriptStart id %u for %s (opened by %s)", GetGOInfo()->chest.eventId, GetGuidStr().c_str(), user->GetGuidStr().c_str());
                 StartEvents_Event(GetMap(), GetGOInfo()->chest.eventId, user, this);
             }
+
+            if (!GetGOInfo()->chest.lockId)
+                SetLootState(GO_JUST_DEACTIVATED);
 
             return;
         }

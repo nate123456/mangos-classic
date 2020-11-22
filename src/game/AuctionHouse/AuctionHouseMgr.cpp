@@ -108,7 +108,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction)
             if (bidder_security > SEC_PLAYER)               // not do redundant DB requests
             {
                 if (!sObjectMgr.GetPlayerNameByGUID(bidder_guid, bidder_name))
-                    bidder_name = sObjectMgr.GetMangosStringForDBCLocale(LANG_UNKNOWN);
+                    bidder_name = sObjectMgr.GetMangosStringForDbcLocale(LANG_UNKNOWN);
             }
         }
 
@@ -116,7 +116,7 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction)
         {
             std::string owner_name;
             if (ownerGuid && !sObjectMgr.GetPlayerNameByGUID(ownerGuid, owner_name))
-                owner_name = sObjectMgr.GetMangosStringForDBCLocale(LANG_UNKNOWN);
+                owner_name = sObjectMgr.GetMangosStringForDbcLocale(LANG_UNKNOWN);
 
             uint32 owner_accid = sObjectMgr.GetPlayerAccountIdByGUID(ownerGuid);
 
@@ -251,8 +251,8 @@ void AuctionHouseMgr::SendAuctionExpiredMail(AuctionEntry* auction)
 
 void AuctionHouseMgr::LoadAuctionItems()
 {
-    // data needs to be at first place for Item::LoadFromDB 0  1        2
-    QueryResult* result = CharacterDatabase.Query("SELECT data,itemguid,item_template FROM auction JOIN item_instance ON itemguid = guid");
+    // data needs to be at first place for Item::LoadFromDB 0        1            2                3      4         5        6      7             8                 9           10          11        12
+    QueryResult* result = CharacterDatabase.Query("SELECT itemEntry, creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, itemTextId, itemguid, item_template FROM auction JOIN item_instance ON itemguid = guid");
 
     if (!result)
     {
@@ -271,8 +271,8 @@ void AuctionHouseMgr::LoadAuctionItems()
         bar.step();
 
         Field* fields = result->Fetch();
-        uint32 item_guid        = fields[1].GetUInt32();
-        uint32 item_template    = fields[2].GetUInt32();
+        uint32 item_guid        = fields[11].GetUInt32();
+        uint32 item_template    = fields[12].GetUInt32();
 
         ItemPrototype const* proto = ObjectMgr::GetItemPrototype(item_template);
 

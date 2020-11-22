@@ -344,9 +344,14 @@ bool CreatureEventAI::CheckEvent(CreatureEventAIHolder& holder, Unit* actionInvo
             break;
         case EVENT_T_DEATH:
             if (event.death.conditionId)
+            {
+                if (!actionInvoker)
+                    return false;
+
                 if (Player* player = actionInvoker->GetBeneficiaryPlayer())
                     if (!sObjectMgr.IsConditionSatisfied(event.death.conditionId, player, player->GetMap(), m_creature, CONDITION_FROM_EVENTAI))
                         return false;
+            }
             break;
         case EVENT_T_EVADE:
             break;
@@ -1175,9 +1180,9 @@ bool CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
         case ACTION_T_PAUSE_WAYPOINTS:
         {
             if (action.pauseWaypoint.doPause)
-                m_creature->addUnitState(UNIT_STAT_WAYPOINT_PAUSED);
+                m_creature->GetMotionMaster()->PauseWaypoints(0);
             else
-                m_creature->clearUnitState(UNIT_STAT_WAYPOINT_PAUSED);
+                m_creature->GetMotionMaster()->UnpauseWaypoints();
             break;
         }
         case ACTION_T_INTERRUPT_SPELL:
@@ -1314,6 +1319,10 @@ bool CreatureEventAI::ProcessAction(CreatureEventAI_Action const& action, uint32
 
 void CreatureEventAI::JustRespawned()                       // NOTE that this is called from the AI's constructor as well
 {
+    if (m_creature->IsNoAggroOnSight())
+        SetReactState(REACT_DEFENSIVE);
+    else
+        SetReactState(REACT_AGGRESSIVE);
     m_EventUpdateTime = EVENT_UPDATE_TIME;
     m_EventDiff = 0;
     m_throwAIEventStep = 0;
