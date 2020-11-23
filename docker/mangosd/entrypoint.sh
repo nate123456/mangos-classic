@@ -18,6 +18,7 @@ cp -u /mangos/tmp/*.conf /mangos/etc/
 
 # copy all conf files to mounted host config directory (does not overwrite)
 cd /mangos/etc
+
 sed -i "s|127.0.0.1;3306;mangos;mangos;|$MYSQL_HOST;$MYSQL_PORT;$MYSQL_USER;$MYSQL_PASSWORD;|g" *.conf
 
 # save sql parameters to config file
